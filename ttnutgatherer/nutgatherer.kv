@@ -1,0 +1,27 @@
+
+#:set FONT_MED  sp(24)
+
+<Label>:
+    font_size: FONT_MED
+<Space@Label>:
+<VBox@BoxLayout>:
+    orientation: "vertical"
+<HBox@BoxLayout>:
+    orientation: "horizontal"
+
+<FullScreen@FloatLayout>:
+    main: main
+    screen: screen
+
+    ScreenManager:
+        id: screen
+        Screen:
+            name: 'main'
+            MainScreen:
+                id: main
+
+
+<MainScreen@VBox>:
+    Label:
+        text: "Hello World!"
+        font_size: FONT_MED

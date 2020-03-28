@@ -1,0 +1,18 @@
+Source: nutgatherer
+Maintainer: Dean Serenevy <dean@serenevy.net>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 10), dh-python,
+ python3-all, python3-setuptools, python3-pytest,
+ python3-amethyst-core,
+ python3-amethyst-games,
+ python3-kivy
+Standards-Version: 4.1.4
+
+Package: nutgatherer
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends},
+ python3-amethyst-core,
+ python3-amethyst-games,
+ python3-kivy
+Description: A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)

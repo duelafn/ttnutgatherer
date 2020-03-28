@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: GPL-3.0
+__version__ = '0.0.1'
+
+import argparse
+import sys
+import warnings
+warnings.simplefilter('default')
+warnings.filterwarnings('ignore', module=r'.*/(?:pint|kivy)/.*')
+warnings.filterwarnings('ignore', module=r'(?:babel|pandas|_pytest)\..*')
+
+if sys.version_info < (3,6):
+    raise Exception("Python 3.6 required -- this is only " + sys.version)
+
+def getopts():
+    parser = argparse.ArgumentParser(description="""A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)""")
+    parser.add_argument('--version', action='version', version='This is %(prog)s version {}'.format(__version__))
+    rv = parser.parse_args()
+    sys.argv = [ sys.argv[0] ]  # clear argv else kivy gets confused
+    return rv
+
+# Load argv before loading kivy, else kivy gets confused
+ARGV = getopts()
+
+from ttnutgatherer.app import NutgathererApp as App
+
+def MAIN(argv):
+    app = None
+    try:
+        app = App()
+        app.run()
+    except Exception as err:
+        if app:
+            app.shutdown()
+        raise
+
+if __name__ == '__main__':
+    MAIN(ARGV)

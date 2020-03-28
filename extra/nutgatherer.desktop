@@ -1,0 +1,9 @@
+[Desktop Entry]
+Exec=nutgatherer
+MimeType=
+Name[en_US]=A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)
+Name=A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)
+Path=
+StartupNotify=true
+Terminal=false
+Type=Application

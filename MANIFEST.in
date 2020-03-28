@@ -1,0 +1,8 @@
+include CONTRIBUTING
+include ChangeLog.txt
+include LICENSE
+include README.rst
+include extra/nutgatherer.desktop
+include tests/*
+recursive-include ttnutgatherer *.kv
+recursive-include ttnutgatherer *.rst
