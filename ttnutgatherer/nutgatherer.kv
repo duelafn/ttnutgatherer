@@ -1,5 +1,7 @@
 
-#:set FONT_MED  sp(24)
+#:set FONT_MED    sp(24)
+#:set BTN_HEIGHT  sp(64)
+#:set MED_SKIP    dp(12)
 
 <Label>:
     font_size: FONT_MED
@@ -16,12 +18,81 @@
     ScreenManager:
         id: screen
         Screen:
+            name: 'setup'
+            SetupScreen:
+                id: setup
+        Screen:
             name: 'main'
             MainScreen:
                 id: main
+
+<SetupScreen@HBox>:
+    spacing: MED_SKIP
+    padding: MED_SKIP
+    VBox:
+        Space:
+        ToggleButton:
+            text: "Single Player"
+            group: "player-mode"
+            size_hint_y: None
+            height: BTN_HEIGHT
+            on_press:
+                play_mode.current = 'single_player_setup' if self.state == 'down' else 'blank'
+        ToggleButton:
+            text: "Network Play"
+            group: "player-mode"
+            size_hint_y: None
+            height: BTN_HEIGHT
+            on_press:
+                play_mode.current = 'network_setup' if self.state == 'down' else 'blank'
+        Space:
+
+    ScreenManager:
+        id: play_mode
+        transition: app.slide_transition
+        Screen:
+            name: 'blank'
+        Screen:
+            name: 'single_player_setup'
+            RelativeLayout:
+                HBox:
+                    pos_hint: {'x': 0, 'y': 0.7}
+                    size_hint_y: None
+                    height: BTN_HEIGHT
+                    Label:
+                        text: "Number AI Players"
+                    Spinner:
+                        id: num_ai
+                        text: '3'
+                        values: ('1','2','3','4','5')
+
+                Button:
+                    pos_hint: {'x': 0.6, 'y': 0.3}
+                    size_hint: 0.4, None
+                    height: BTN_HEIGHT
+                    text: "Start Game"
+                    on_press:
+                        play_mode.current = 'blank'
+                        app.start_game_single(num_ai.text)
+
+
+        Screen:
+            name: 'network_setup'
+            RelativeLayout:
+                Label:
+                    pos_hint: {'x': 0, 'y': 0.7}
+                    text: "Not Implemented"
+
+                Button:
+                    pos_hint: {'x': 0.6, 'y': 0.3}
+                    size_hint: 0.4, None
+                    height: BTN_HEIGHT
+                    text: "Start Game"
 
 
 <MainScreen@VBox>:
     Label:
         text: "Hello World!"
+        size_hint_y: None
+        height: BTN_HEIGHT
         font_size: FONT_MED

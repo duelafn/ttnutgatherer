@@ -24,12 +24,17 @@ import ttnutgatherer
 app = None
 class NutgathererApp(kivy.app.App):
     XDG_APP = 'nutgatherer'
+    mode = Factory.StringProperty()
+    playerno = Factory.NumericProperty()
+
+    hand = Factory.ListProperty()
+    storage = Factory.ListProperty()
 
     def __init__(self):
         global app
         app = self
         ## Items for amethyst.ttlib.App:
-        self.register_event_type('on_server_message')
+        self.register_event_type('on_server_notice')
         super().__init__()
         kivy.core.window.Window.bind(on_key_down=self.on_key_down)
         ## Back to normal
@@ -41,49 +46,45 @@ class NutgathererApp(kivy.app.App):
         self.screen = self.root.screen
         self.main = self.root.main
         self.screen.transition = self.no_transition
-        self.screen.current = 'main'
+        self.screen.current = 'setup'
         return self.root
 
-    def on_server_message(self, msg):
-        super().on_server_message(msg)
+    def start_game_single(self, num_ai):
+        self.mode = 'single'
+        self.game = ttnutgatherer.Engine(num_players = 1)# + num_ai)
+        self.playerno = self.game.new_player()
+        self.game.observe(self.playerno, self.on_server_notice)
+        # TODO: Add AI Players
+        self.game.call_immediate('begin')
+        self.screen.current = 'main'
+
+    def on_notice_call_begin(self, data):
+        self.hand = data['hand']
+
+    def on_notice_call_start_turn(self, data):
+        pass
+
+    def on_notice_call_draw(self, data):
+        pass
+
+    def on_notice_call_store(self, data):
+        pass
+
+    def on_notice_call_end_turn(self, data):
+        pass
+
+    def on_server_notice(self, game, seq, player, notice):
+        # This should be handled by Client(): it gives me a configured game
+        if self.mode != 'single':
+            self.game
+        if notice.type == NoticeType.CALL:
+            cb = self.getattr(self, f"on_notice_call_{notice.name}", None)
+            if cb and callable(cb):
+                cb(notice.data)
 
     def on_key_down(self, win, key, scancode, string, modifiers):
-        if key == 282:   # F1
-            return True  # Block F1 settings editor
-        elif key == 292: # F11
-            win.fullscreen = 'auto' if win.fullscreen is False else False
-            win.update_viewport()
-            return True
-
-
-## Items for amethyst.ttlib.App:
+        pass
 
     def on_stop(self):
-        self.shutdown()
+        # TODO: Disconnect from server
         super().on_stop()
-
-    def on_shutdown(self, *args):
-        self._on_shutdown.append(args)
-    def shutdown(self):
-        pass
-#         for args in self._on_shutdown:
-#             try:
-#                 if args and callable(args[0]):
-#                     args[0](*args[1:])
-#                 elif 1 == len(args):
-#                     args[0].close()
-#                 else:
-#                     getattr(args[0], args[1])(*args[2:])
-#             except Exception as err:
-#                 sys.stderr.write("[ERROR] App.shutdown: {}\n".format(err))
-
-    @classmethod
-    def user_conf(cls, *args, **kwargs):
-        return utg_common.path.user_conf(cls.XDG_APP, *args, **kwargs)
-    @classmethod
-    def user_data(cls, *args, **kwargs):
-        return utg_common.path.user_data(cls.XDG_APP, *args, **kwargs)
-    @classmethod
-    def user_cache(cls, *args, **kwargs):
-        return utg_common.path.user_cache(cls.XDG_APP, *args, **kwargs)
-

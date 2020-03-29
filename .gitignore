@@ -1,4 +1,7 @@
 
+/ttnutgatherer/nuts-*.png
+/ttnutgatherer/nuts.atlas
+
 # Python Ignores
 *.egg
 *.egg-info
