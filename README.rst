@@ -1,6 +1,6 @@
 
-Nut Gtherer
-===========
+Nut Gatherer
+============
 
 A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home
 Lantern Games, LLC (http://www.squarrels.com/).
