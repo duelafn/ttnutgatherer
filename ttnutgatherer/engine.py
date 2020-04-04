@@ -82,6 +82,12 @@ class BaseGame(amethyst.games.EnginePlugin):
                 else:
                     p.hand.append(card_id)
 
+        if reshuffle:
+            game.draw_pile.extend(discard)
+            game.draw_pile.shuffle()
+        else:
+            game.discard_pile.extend(discard)
+
 
     @action
     def begin(self, game, stash, player_num=None, hand=None):
