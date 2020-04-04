@@ -25,7 +25,7 @@ class Engine(amethyst.games.Engine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.register_plugin(GrantManager())
-        self.register_plugin(Turns(setup_rounds=1))
+        self.register_plugin(Turns())
         self.register_plugin(ObjectStore())
         self.register_plugin(BaseGame())
 
