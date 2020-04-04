@@ -99,8 +99,9 @@ class BaseGame(amethyst.games.EnginePlugin):
 
     @begin.notify
     def begin(self, game, stash, player_num, kwargs):
-        kwargs['player_num'] = player_num
-        kwargs['hand'] = list(game.players[player_num].hand)
+        if player_num is not None:
+            kwargs['player_num'] = player_num
+            kwargs['hand'] = list(game.players[player_num].hand)
         return kwargs
 
 
