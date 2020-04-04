@@ -26,14 +26,8 @@ ARGV = getopts()
 from ttnutgatherer.app import NutgathererApp as App
 
 def MAIN(argv):
-    app = None
-    try:
-        app = App()
-        app.run()
-    except Exception as err:
-        if app:
-            app.shutdown()
-        raise
+    app = App()
+    app.run()
 
 if __name__ == '__main__':
     MAIN(ARGV)

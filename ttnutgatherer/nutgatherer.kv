@@ -81,6 +81,8 @@
             RelativeLayout:
                 Label:
                     pos_hint: {'x': 0, 'y': 0.7}
+                    size_hint: 1, None
+                    height: BTN_HEIGHT
                     text: "Not Implemented"
 
                 Button:
@@ -89,6 +91,13 @@
                     height: BTN_HEIGHT
                     text: "Start Game"
 
+<Card@VBox>:
+    selected: False
+    name: ""
+
+    Image:
+        source: 'atlas://nuts/card-' + root.name if root.name else None
+
 
 <MainScreen@VBox>:
     Label:
@@ -96,3 +105,6 @@
         size_hint_y: None
         height: BTN_HEIGHT
         font_size: FONT_MED
+
+    Card:
+        name: "1"

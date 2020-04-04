@@ -40,5 +40,5 @@ version-bump::
 	perl -pi -E 's/\Q${PKG_VERSION}\E/${NEW_VERSION}/' ${PKGPATH}/__init__.py
 
 .PHONY: zip
-zip:: test
+zip::
 	python3 setup.py sdist --format=zip

@@ -29,11 +29,12 @@ setuptools.setup(
     url          = 'https://github.com/duelafn/nutgatherer',
     author       = 'Dean Serenevy',
     author_email = 'dean@serenevy.net',
-    description  = 'A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)',
+    description  = "A game of collecting nuts, modeled off of the S'Quarrels Card Game by Home Lantern Games, LLC (http://www.squarrels.com/)",
     packages     = setuptools.find_packages(),
     install_requires = [
         "amethyst-core",
         "amethyst-games",
+        "amethyst-ttkvlib",
         "kivy",
         ],
     scripts      = [ 'nutgatherer' ],

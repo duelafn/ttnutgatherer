@@ -1,3 +1,8 @@
+prune debian
+prune extra
+exclude .gitignore
+exclude Makefile
+
 include CONTRIBUTING
 include ChangeLog.txt
 include LICENSE

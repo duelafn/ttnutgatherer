@@ -32,6 +32,14 @@ class Engine(amethyst.games.Engine):
     def new_player(self):
         return self.set_random_player(Player(), self.num_players)
 
+    def grant_current(self, *args, **kwargs):
+        return self.grant(self.turn_player_num(), Grant(*args, **kwargs))
+
+    @property
+    def player(self):
+        """Just a shortcut"""
+        return self.turn_player()
+
     def initialize(self):
         super().initialize()
         cards = [ ]
@@ -57,7 +65,7 @@ class Engine(amethyst.games.Engine):
 
 class BaseGame(amethyst.games.EnginePlugin):
     AMETHYST_PLUGIN_COMPAT = 1  # Plugin API version
-    drawn_this_turn = Attr(int)
+    drawn_this_turn = Attr(bool)
 
     def initial_deal(self, game):
         game.draw_pile.shuffle()
@@ -76,26 +84,73 @@ class BaseGame(amethyst.games.EnginePlugin):
 
 
     @action
-    def begin(self, game, stash):
-        game.call_immediate('start_turn')
+    def begin(self, game, stash, player_num=None, hand=None):
+        if game.is_server():
+            self.initial_deal(game)
+        elif player_num and hand:
+            game.players[player_num].hand.extend(hand)
+        game.schedule('start_turn')
+
     @begin.notify
     def begin(self, game, stash, player_num, kwargs):
+        kwargs['player_num'] = player_num
         kwargs['hand'] = list(game.players[player_num].hand)
+        return kwargs
+
 
     @action
     def start_turn(self, game, stash):
         game.turn_start()
-        self.drawn_this_turn = 0
-        game.grant(game.turn_player_num(), Grant(name="draw"))
+        self.drawn_this_turn = False
+        # Grant a draw action, but do not allow the client to tell us what
+        # they drew. In this simple game, the forced kwarg is not necessary
+        # (we unconditionally overwrite the `drawn` parameter below), but
+        # forcing may be useful in more advanced games. NOTE: The forced
+        # parameter is not secret - all players will see it. Use a local
+        # dictionary with random keys if you need to keep a secret forced
+        # parameter.
+        game.grant_current(name="draw", kwargs=dict(drawn=None))
 
     @action
-    def draw(self, game, stash):
-        card_id = game.draw_pile.pop()
-        game.grant(game.turn_player_num(), Grant(name="draw"))
-        game.grant(game.turn_player_num(), Grant(name="end_turn"))
+    def draw(self, game, stash, drawn=None):
+        # When we draw from the server, we actually take the next card off
+        # the deck. The client, however, takes the card received from the
+        # server's notification (see draw.notify below).
+        #
+        # Notice that the server overwrites anything the client may have
+        # sent in `drawn` (even though we also forced drawn=None in the grant).
+        if game.is_server():
+            drawn = game.draw_pile.pop()
+
+        # Save the drawn card for notification later
+        stash['drawn'] = drawn
+
+        # OPTIONAL: The local game doesn't care about the draw pile since
+        # it isn't really used. We could, however, keep it up to date if
+        # our game required it:
+        ### if drawn is not None: game.draw_pile.stack.remove(drawn)
+
+        # Save the drawn card to the current player's hand
+        if drawn is not None:
+            game.player.hand.append(drawn)
+
+        # After drawing, what can we do?
+        if not self.drawn_this_turn:
+            self.drawn_this_turn = True
+            game.grant_current(name="end_turn")
+        if len(game.player.hand) < 7:
+            game.grant_current(name="draw", kwargs=dict(drawn=None))
+
     @draw.check
-    def draw(self, game, stash):
-        pass
+    def draw(self, game, stash, drawn=None):
+        return len(game.player.hand) < 7 or not self.drawn_this_turn
+
+    @draw.notify
+    def draw(self, game, stash, player_num, kwargs):
+        # Send the card drawn only to the current player
+        if player_num == game.turn_player_num():
+            kwargs['drawn'] = stash['drawn']
+
 
     @action
     def store(self, game, stash):
