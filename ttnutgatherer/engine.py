@@ -14,7 +14,7 @@ from amethyst.games.plugins import GrantManager, Turns, ObjectStore, Grant
 from amethyst.games.objects import Pile
 import amethyst.games
 
-from .objects import Card, Player
+from ttnutgatherer.objects import Card, Player
 
 
 class Engine(amethyst.games.Engine):
@@ -29,17 +29,16 @@ class Engine(amethyst.games.Engine):
         self.register_plugin(ObjectStore())
         self.register_plugin(BaseGame())
 
+    # Some shortcut methods and properties:
     def new_player(self):
         return self.set_random_player(Player(), self.num_players)
-
     def grant_current(self, *args, **kwargs):
         return self.grant(self.turn_player_num(), Grant(*args, **kwargs))
-
     @property
     def player(self):
-        """Just a shortcut"""
         return self.turn_player()
 
+    # 
     def initialize(self):
         super().initialize()
         cards = [ ]
