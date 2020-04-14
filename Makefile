@@ -4,7 +4,7 @@ PKGNAME = nutgatherer
 PKGPATH = ttnutgatherer
 COMMON_NAME = nutgatherer
 
-IMAGES = $(wildcard media/card-*.png)
+IMAGES = $(wildcard media/nuts/*.png)
 
 include extra/python.make
 include extra/debian.make
