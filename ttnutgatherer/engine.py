@@ -117,7 +117,7 @@ class BaseGame(amethyst.games.EnginePlugin):
         game.grant_current(name="draw", kwargs=dict(drawn=None))
 
     @action
-    def draw(self, game, stash, drawn=None):
+    def draw(self, game, stash, player_num, drawn=None):
         # When we draw from the server, we actually take the next card off
         # the deck. The client, however, takes the card received from the
         # server's notification (see draw.notify below).
@@ -147,7 +147,7 @@ class BaseGame(amethyst.games.EnginePlugin):
             game.grant_current(name="draw", kwargs=dict(drawn=None))
 
     @draw.check
-    def draw(self, game, stash, drawn=None):
+    def draw(self, game, stash, player_num, drawn=None):
         return len(game.player.hand) < 7 or not self.drawn_this_turn
 
     @draw.notify
@@ -156,13 +156,12 @@ class BaseGame(amethyst.games.EnginePlugin):
         if player_num == game.turn_player_num():
             kwargs['drawn'] = stash['drawn']
 
-
     @action
-    def store(self, game, stash, cards):
+    def store(self, game, stash, player_num, cards):
         print(stash['hand_objs'])
 
     @store.check
-    def store(self, game, stash, cards):
+    def store(self, game, stash, player_num, cards):
         if 3 != len(cards):
             return False
         objs = game.player.hand.find(Filter(id=set(cards)))
@@ -173,6 +172,6 @@ class BaseGame(amethyst.games.EnginePlugin):
 
 
     @action
-    def end_turn(self, game, stash, *, discard):
+    def end_turn(self, game, stash, player_num, discard):
         game.commit()
         game.call_immediate('start_turn')

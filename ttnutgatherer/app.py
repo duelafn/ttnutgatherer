@@ -10,6 +10,8 @@ app
 
 import os.path
 
+from functools import partial
+
 from kivy.config import Config
 # Config.set('graphics', 'fullscreen', 'auto')
 Config.set('kivy', 'exit_on_escape', 1)
@@ -17,7 +19,7 @@ Config.set('kivy', 'exit_on_escape', 1)
 import kivy
 kivy.require('1.10.0')
 
-# from kivy.clock import Clock, mainthread
+from kivy.clock import Clock
 from kivy.factory import Factory
 import kivy.core.window
 import kivy.uix.screenmanager
@@ -37,8 +39,6 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
     mode = Factory.StringProperty()
     playerno = Factory.NumericProperty()
 
-    hand = Factory.ListProperty()
-
     def __init__(self):
         super().__init__()
         kivy.core.window.Window.bind(on_key_down=self.on_key_down)
@@ -49,6 +49,9 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
         self.root = Factory.FullScreen()
         self.screen = self.root.screen
         self.main = self.root.main
+        self.draw_pile = self.main.ids['draw_pile']
+        self.discard_pile = self.main.ids['discard_pile']
+        self.card_fan = self.main.ids['card_fan']
         self.screen.transition = self.no_transition
         # self.screen.current = 'setup'
         self.screen.current = 'main'
@@ -66,8 +69,24 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
         self.game.process_queue()
         self.screen.current = 'main'
 
+    def draw_cards(self, card_ids, dt=None):
+        id = card_ids[0]
+        card = self.game.stor_get(id)
+        if card:
+            for n, c in enumerate(self.card_fan.cards):
+                if c['card'].name > card.name:
+                    break
+            else:
+                n = len(self.card_fan)
+            widget = self.card_fan.get_card_widget()
+            widget.copy_from(self.draw_pile)
+            self.card_fan.insert(n, dict(card=card), widget=widget)
+
+        if len(card_ids) > 1:
+            Clock.schedule_once(partial(self.draw_cards, card_ids[1:]), 0.100)
+
     def on_notice_call_begin(self, game, player, data):
-        self.hand = data['hand']
+        Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
 
     def on_notice_call_start_turn(self, game, player, data):
         pass
