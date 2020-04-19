@@ -7,6 +7,10 @@ Files: *
 Copyright: 2020 Dean Serenevy <dean@serenevy.net>
 License: GPL-3
 
+Files: media/squirrel.svg
+Copyright: Petri Salmela "pesasa" <pesasa@iki.fi>
+License: CC0
+
 
 
 License: GPL-3
@@ -614,3 +618,16 @@ License: GPL-3
  .
  END OF TERMS AND CONDITIONS
 
+
+License: CC0
+ No Copyright
+ .
+ The person who associated a work with this deed has dedicated the work to
+ the public domain by waiving all of his or her rights to the work
+ worldwide under copyright law, including all related and neighboring
+ rights, to the extent allowed by law.
+ .
+ You can copy, modify, distribute and perform the work, even for commercial
+ purposes, all without asking permission. See Other Information below.
+ .
+ For full license text, see: https://creativecommons.org/publicdomain/zero/1.0/
