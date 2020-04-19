@@ -91,12 +91,11 @@
                     height: BTN_HEIGHT
                     text: "Start Game"
 
-<Card@VBox>:
-    selected: False
-    name: ""
-
-    Image:
-        source: 'atlas://nuts/card-' + root.name if root.name else None
+<Card@CardImage>:
+    key: ''
+    card: app.game.stor_get(self.key) if app.game else None
+    source: 'atlas://nuts/card-' + root.name if root.name else ''
+    back_source: 'atlas://nuts/card-back'
 
 
 <MainScreen@VBox>:
@@ -106,5 +105,8 @@
         height: BTN_HEIGHT
         font_size: FONT_MED
 
-    Card:
-        name: "1"
+    Space:
+
+    CardFan:
+        card_widget: 'Card'
+        cards: [ dict(key=id) for id in app.hand ]

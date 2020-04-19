@@ -38,7 +38,6 @@ class Engine(amethyst.games.Engine):
     def player(self):
         return self.turn_player()
 
-    # 
     def initialize(self):
         super().initialize()
         cards = [ ]
@@ -48,14 +47,14 @@ class Engine(amethyst.games.Engine):
         cards.extend([ Card(name="4", flags=set(("acorn", "number",))) for i in range(12) ])
         cards.extend([ Card(name="5", flags=set(("acorn", "number",))) for i in range(9) ])
 
-        cards.extend([ Card(name="Quarrel",   flags=set(("action",))) for i in range(8) ])
-        cards.extend([ Card(name="Hoard",     flags=set(("action",))) for i in range(8) ])
-        cards.extend([ Card(name="Ambush",    flags=set(("action",))) for i in range(6) ])
-        cards.extend([ Card(name="Whirlwind", flags=set(("action",))) for i in range(2) ])
+        cards.extend([ Card(name="quarrel",   flags=set(("action",))) for i in range(8) ])
+        cards.extend([ Card(name="hoard",     flags=set(("action",))) for i in range(8) ])
+        cards.extend([ Card(name="ambush",    flags=set(("action",))) for i in range(6) ])
+        cards.extend([ Card(name="whirlwind", flags=set(("action",))) for i in range(2) ])
 
-        cards.append(Card(name="Golden Acorn", flags=set(("acorn",))))
-        cards.append(Card(name="Rotten Acorn", flags=set(("acorn",))))
-        cards.append(Card(name="Winter", flags=set(("action",))))
+        cards.append(Card(name="golden", flags=set(("acorn",))))
+        cards.append(Card(name="rotten", flags=set(("acorn",))))
+        cards.append(Card(name="winter", flags=set(("action",))))
 
         self.stor_extend_shared(cards)
         self.draw_pile.extend(card.id for card in cards)
@@ -159,8 +158,18 @@ class BaseGame(amethyst.games.EnginePlugin):
 
 
     @action
-    def store(self, game, stash):
-        pass
+    def store(self, game, stash, cards):
+        print(stash['hand_objs'])
+
+    @store.check
+    def store(self, game, stash, cards):
+        if 3 != len(cards):
+            return False
+        objs = game.player.hand.find(Filter(id=set(cards)))
+        if 3 != len(objs):
+            return False
+        stash['hand_objs'] = objs
+        return True
 
 
     @action
