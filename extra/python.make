@@ -34,7 +34,7 @@ ${PKGPATH}.egg-info/SOURCES.txt:
 
 .PHONY: test
 test::
-	python3 -E -B -m nose --verbosity=0 tests
+	python3 -m pytest --cov=ttnutgatherer/ --cov-branch --cov-report=html:_coverage tests
 
 version-bump::
 	perl -pi -E 's/\Q${PKG_VERSION}\E/${NEW_VERSION}/' ${PKGPATH}/__init__.py

@@ -2,6 +2,8 @@
 /ttnutgatherer/nuts-*.png
 /ttnutgatherer/nuts.atlas
 
+/_coverage
+
 # Python Ignores
 *.egg
 *.egg-info

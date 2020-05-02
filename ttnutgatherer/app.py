@@ -89,6 +89,10 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
             Clock.schedule_once(partial(self.draw_cards, card_ids[1:]), 0.100)
 
     def on_card_press(self, fan, index, data, widget, touch):
+        if touch.is_double_tap:
+            print("Store", data['card'].name)
+            return
+
         if index in fan.lifted_cards:
             fan.lifted_cards.remove(index)
         else:
