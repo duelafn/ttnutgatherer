@@ -85,6 +85,12 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
         if len(card_ids) > 1:
             Clock.schedule_once(partial(self.draw_cards, card_ids[1:]), 0.100)
 
+    def on_card_press(self, fan, index, data, widget, touch):
+        if index in fan.lifted_cards:
+            fan.lifted_cards.remove(index)
+        else:
+            fan.lifted_cards.append(index)
+
     def on_notice_call_begin(self, game, player, data):
         Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
 

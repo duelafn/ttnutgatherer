@@ -120,4 +120,5 @@
         card_widget: 'Card'
         min_radius: 1500
         card_size: 2*self.height/3, self.width/7
-        on_added: args[2].show_front = True
+        on_card_add: args[3].show_front = True
+        on_card_press: app.on_card_press(*args)
