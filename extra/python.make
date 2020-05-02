@@ -18,7 +18,7 @@ check::
 	@echo OK
 
 clean::
-	rm -rf cover build dist debbuild ${PKGPATH}.egg-info
+	rm -rf cover build dist _coverage ${PKGPATH}.egg-info
 	rm -f .coverage .prove MANIFEST
 	pyclean .
 

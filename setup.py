@@ -8,6 +8,8 @@ import os
 import os.path
 import re
 import setuptools
+import setuptools.command.build_py
+import subprocess
 import unittest
 
 __version__ = re.search(r'(?m)^__version__\s*=\s*"([\d.]+(?:[\-\+~.]\w+)*)"', open('ttnutgatherer/__init__.py').read()).group(1)
@@ -23,7 +25,17 @@ def find(path, ext):
                  rv.append(os.path.join(root, file))
     return rv
 
+class BuildPyCommand(setuptools.command.build_py.build_py):
+    """Also build kivy .atlas file during build step."""
+    def run(self):
+        subprocess.run(["make", "ttnutgatherer/nuts.atlas"])
+        setuptools.command.build_py.build_py.run(self)
+
 setuptools.setup(
+    cmdclass={
+        'build_py': BuildPyCommand,
+    },
+
     name         = 'nutgatherer',
     version      = __version__,
     url          = 'https://github.com/duelafn/nutgatherer',

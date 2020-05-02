@@ -13,6 +13,9 @@ cowbuild10: debbuild/deb10/${PKGNAME}_${PKG_VERSION}-1.dsc
 cowbuild: cowbuild10
 
 ttnutgatherer/nuts.atlas: ${IMAGES}
-	rm ttnutgatherer/nuts-?.png
+	rm -f ttnutgatherer/nuts-?.png
 	python3 -m kivy.atlas -- ttnutgatherer/nuts 1500x1500 $^
 	optipng ttnutgatherer/nuts*.png
+
+clean::
+	rm -f ttnutgatherer/nuts.atlas ttnutgatherer/nuts-*.png
