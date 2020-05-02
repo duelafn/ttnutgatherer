@@ -7,4 +7,4 @@ Lantern Games, LLC (http://www.squarrels.com/).
 
 __version__ = "0.1.0"
 
-from ttnutgatherer.engine import *    # noqa: F403
+from ttnutgatherer.engine import *    # noqa: F401, F403

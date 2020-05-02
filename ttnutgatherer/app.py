@@ -8,10 +8,9 @@ NutgathererApp
 app
 '''.split()
 
-import os.path
-import warnings
-
 from functools import partial
+import math
+import os.path
 
 from kivy.config import Config
 # Config.set('graphics', 'fullscreen', 'auto')
@@ -22,22 +21,32 @@ kivy.require('1.10.0')
 
 from kivy.clock import Clock
 from kivy.factory import Factory
+from kivy.metrics import inch
 import kivy.core.window
-import kivy.uix.screenmanager
 import kivy.resources
+import kivy.uix.screenmanager
 kivy.resources.resource_add_path(os.path.dirname(__file__))
 
-from amethyst.games import Filter, Grant
-
+from amethyst.games import Filter, Grant, NoticeType
+from amethyst.ttkvlib.behaviors.toast import ToastBehavior
+from amethyst.ttkvlib.util import rotation_for_animation
 import amethyst.ttkvlib.app
 import amethyst.ttkvlib.widgets  # Add ttkvlib widgets to the Factory
 
 import ttnutgatherer
 
-class NutgathererApp(amethyst.ttkvlib.app.App):
+GRANTS = dict(
+    draw     = (10, "Draw a card"),
+    store    = (20, "Store 3 matching cards"),
+    discard  = (70, "Discard"),
+    end_turn = (90, "End turn"),
+)
+
+class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
     XDG_APP = 'nutgatherer'
 
     game = Factory.ObjectProperty()
+    notes = Factory.StringProperty()
 
     mode = Factory.StringProperty()
     playerno = Factory.NumericProperty()
@@ -69,8 +78,11 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
         # TODO: Add AI Players
         self.game.initialize()
         self.game.call_immediate('begin')
-        self.game.process_queue()
+        Clock.schedule_interval(lambda *args: self.game.process_queue(), 0)
         self.screen.current = 'main'
+
+    def draw_card(self):
+        self.trigger('draw')
 
     def draw_cards(self, card_ids, dt=None):
         id = card_ids[0]
@@ -129,51 +141,96 @@ class NutgathererApp(amethyst.ttkvlib.app.App):
         if 3 == len(dragged):
             print("Store")
             # TODO: check that we drop on the stash
-            store = self.action('store')
+            store = self.get_action('store')
             if store:
-                self.trigger(store, cards=[ d['card'].id for idw in dragged ])
+                self.trigger(store, cards=[ d['card'].id for i, d, w in dragged ])
                 # TODO: remove cards from the hand, add them back in if the store fails
 
-        elif 1 == len(dragged):
-            # TODO: depends on where we drop it
-            print("Other")
-            pass
+        elif 0 == len(dragged) or (1 == len(dragged) and data['card'].id == dragged[0][2].id):
+            card = data['card']
+            if self.discard_pile.collide_point(*touch.pos):
+                if self.trigger('discard', card=card.id):
+                    self.discard(fan, index, data, widget)
+            else:
+                print("Other")
+
 
     def on_notice_call_begin(self, game, player, data):
         Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
 
     def on_notice_call_start_turn(self, game, player, data):
-        pass
+        print("Start turn", data)
 
     def on_notice_call_draw(self, game, player, data):
-        pass
+        print("Draw", data)
 
     def on_notice_call_store(self, game, player, data):
-        pass
+        print("Store", data)
 
     def on_notice_call_end_turn(self, game, player, data):
-        pass
+        print("End turn", data)
 
 
-    def action(self, filt=None, **kwargs):
+
+    def discard(self, fan, index, data, widget):
+        pile = self.discard_pile
+        if fan and index is not None:
+            fan.pop(index, recycle=False)
+        dt = math.hypot(widget.x-pile.x, widget.y-pile.y) / (fan.linear_speed if fan else inch(15))
+        anim = Factory.Animation(
+            x=pile.x, y=pile.y,
+            width=pile.width, height=pile.height,
+            rotation=rotation_for_animation(widget.rotation, 0),
+            duration=min(2,dt),
+        )
+        anim.bind(on_complete=lambda *args: self.discard_complete(fan, data['card'], widget))
+        anim.start(widget)
+
+    def discard_complete(self, fan, card, widget):
+        if fan:
+            fan.recycle(widget)
+        self.discard_pile.card = card
+        self.discard_pile.show_front = True
+
+    def dispatch_notice(self, game, seq, player, notice):
+        super(NutgathererApp,self).dispatch_notice(game, seq, player, notice)
+        if notice.type in (NoticeType.GRANT, NoticeType.EXPIRE):
+            self.check_notes()
+
+    def check_notes(self):
+        self.notes = "Available actions:\n" + "".join(f"  * {x[1]}\n" for x in sorted(
+            GRANTS.get(g.name, (0, g.name)) for g in self.game.list_grants(self.playerno)
+        ))
+
+
+    def get_action(self, filt=None, **kwargs):
         if kwargs and filt is None:
             filt = Filter(**kwargs)
         elif isinstance(filt, str):
+            grant = self.game.find_grant(self.playerno, filt)
+            if grant:
+                return grant
             filt = Filter(name=filt)
         if filt:
             rv = self.game.list_grants(self.playerno, filt)
             if 1 == len(rv):
                 return rv[0]
             if 1 < len(rv):
-                warnings.warn("Fould multiple matches for grant {}".format(filt))
+                self.error(f"Multiple '{GRANTS.get(grant, (0, grant))[1]}' actions - that was not expected")
                 return rv[0]
         return None
 
     def trigger(self, grant, **kwargs):
+        if isinstance(grant, str):
+            gr = self.get_action(grant)
+            if gr:
+                grant = gr.id
+            else:
+                self.warning(f"Not allowed to '{GRANTS.get(grant, (0, grant))[1]}' at this time", 1.5)
+                return False
         if isinstance(grant, Grant):
-            grant = grand.id
-        self.game.trigger(self.playerno, grant, kwargs)
-
+            grant = grant.id
+        return self.game.trigger(self.playerno, grant, kwargs)
 
     def on_key_down(self, win, key, scancode, string, modifiers):
         if key == 292: # F11

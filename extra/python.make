@@ -7,7 +7,7 @@ TODAY ?= $(shell date +%Y-%m-%d)
 PKG_VERSION ?= $(shell python3 -c 'import re; print(re.search(r"__version__ = \"([\d.]+)\"", open("${PKGPATH}/__init__.py").read()).group(1))')
 NEW_PYTHON_VERSION := $(shell perl -E '($$y,$$m)=(localtime)[5,4];$$m++;$$y-=100;$$r=0;$$r=$$1+1 if 0==index("${PKG_VERSION}","$$y.$$m") and "${PKG_VERSION}" =~ /\.(\d+)$$/; say "$$y.$$m.$$r"')
 NEW_VERSION ?= ${NEW_PYTHON_VERSION}
-PY_PATHS ?= ${PKGNAME} tests
+PY_PATHS ?= ${PKGPATH} ${PKGNAME} tests
 
 SOURCES ?= $(shell cat ${PKGPATH}.egg-info/SOURCES.txt 2>/dev/null)
 

@@ -26,6 +26,15 @@
             MainScreen:
                 id: main
 
+    # alert label
+    Label:
+        size_hint: 1, None
+        pos_hint: { 'top': 1.0 }
+        height: BTN_HEIGHT
+        text: app.errstr
+        markup: True
+
+
 <SetupScreen@HBox>:
     spacing: MED_SKIP
     padding: MED_SKIP
@@ -91,36 +100,52 @@
                     height: BTN_HEIGHT
                     text: "Start Game"
 
-<Card@CardImage>:
+<Card@ButtonBehavior+CardImage>:
     source: 'atlas://nuts/card-' + root.name if root.name else ''
     back_source: 'atlas://nuts/card-back'
     size_hint: None, None
     size: dp(140), dp(210)
 
-<MainScreen@VBox>:
-    padding: BTN_HEIGHT
-    HBox:
-        size_hint_y: None
-        height: self.minimum_height
-        Space:
-        Card:
-            id: draw_pile
-            size_hint_y: None
-            show_front: False
-        Space:
-        Card:
-            id: discard_pile
-            size_hint_y: None
-            back_source: ''
-            show_front: False
-        Space:
+<MainScreen@HBox>:
+    padding: MED_SKIP
+    spacing: MED_SKIP
 
-    CardFan:
-        id: card_fan
-        card_widget: 'Card'
-        min_radius: 1500
-        card_size: 2*self.height/3, self.width/7
-        on_card_add: args[3].show_front = True
-        on_card_press: app.on_card_press(*args)
-        on_card_drag:  app.on_card_drag(*args)
-        on_card_drop:  app.on_card_drop(*args)
+    Label:
+        text: app.notes
+        text_size: self.size
+        size_hint: 0.25, 1
+
+    VBox:
+        size_hint: 0.5, 1
+        HBox:
+            size_hint_y: None
+            height: self.minimum_height
+            Space:
+                size_hint: 0.5, 1
+            Card:
+                id: draw_pile
+                size_hint_y: None
+                show_front: False
+                on_press: app.draw_card()
+            Space:
+                size_hint: 0.5, 1
+            Card:
+                id: discard_pile
+                size_hint_y: None
+                back_source: ''
+                show_front: False
+            Space:
+                size_hint: 0.5, 1
+
+        CardFan:
+            id: card_fan
+            card_widget: 'Card'
+            min_radius: 1000
+            card_size: [ x * self.height/2 for x in (2/3, 1) ]
+            on_card_add: args[3].show_front = True
+            on_card_press: app.on_card_press(*args)
+            on_card_drag:  app.on_card_drag(*args)
+            on_card_drop:  app.on_card_drop(*args)
+
+    Space:
+        size_hint: 0.25, 1

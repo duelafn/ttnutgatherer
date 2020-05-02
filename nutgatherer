@@ -20,6 +20,7 @@ def getopts():
     sys.argv = [ sys.argv[0] ]  # clear argv else kivy gets confused
     return rv
 
+
 # Load argv before loading kivy, else kivy gets confused
 ARGV = getopts()
 
@@ -28,6 +29,7 @@ from ttnutgatherer.app import NutgathererApp as App
 def MAIN(argv):
     app = App()
     app.run()
+
 
 if __name__ == '__main__':
     MAIN(ARGV)

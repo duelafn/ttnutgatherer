@@ -9,9 +9,10 @@ Engine
 
 
 from amethyst.core import Attr
+from amethyst.games import Filter
 from amethyst.games import action
-from amethyst.games.plugins import GrantManager, Turns, ObjectStore, Grant
 from amethyst.games.objects import Pile
+from amethyst.games.plugins import GrantManager, Turns, ObjectStore, Grant
 import amethyst.games
 
 from ttnutgatherer.objects import Card, Player
@@ -33,7 +34,11 @@ class Engine(amethyst.games.Engine):
     def new_player(self):
         return self.set_random_player(Player(), self.num_players)
     def grant_current(self, *args, **kwargs):
-        return self.grant(self.turn_player_num(), Grant(*args, **kwargs))
+        if 'kwargs' in kwargs:
+            kwargs['kwargs'].setdefault('player_num', self.turn_player_num())
+        else:
+            kwargs['kwargs'] = dict(player_num=self.turn_player_num())
+        return self.grant(self.turn_player_num(), Grant(**kwargs))
     @property
     def player(self):
         return self.turn_player()
@@ -133,7 +138,7 @@ class BaseGame(amethyst.games.EnginePlugin):
         # OPTIONAL: The local game doesn't care about the draw pile since
         # it isn't really used. We could, however, keep it up to date if
         # our game required it:
-        ### if drawn is not None: game.draw_pile.stack.remove(drawn)
+        # ** if drawn is not None: game.draw_pile.stack.remove(drawn)
 
         # Save the drawn card to the current player's hand
         if drawn is not None:
@@ -142,7 +147,8 @@ class BaseGame(amethyst.games.EnginePlugin):
         # After drawing, what can we do?
         if not self.drawn_this_turn:
             self.drawn_this_turn = True
-            game.grant_current(name="end_turn")
+            game.grant_current(name="store")
+            game.grant_current(name="discard")
         if len(game.player.hand) < 7:
             game.grant_current(name="draw", kwargs=dict(drawn=None))
 
@@ -157,8 +163,14 @@ class BaseGame(amethyst.games.EnginePlugin):
             kwargs['drawn'] = stash['drawn']
 
     @action
+    def discard(self, game, stash, player_num, card):
+        print("DISCARD", card)
+        game.expire()
+        game.grant_current(name="end_turn")
+
+    @action
     def store(self, game, stash, player_num, cards):
-        print(stash['hand_objs'])
+        print("STORE", cards, stash['hand_objs'])
 
     @store.check
     def store(self, game, stash, player_num, cards):
