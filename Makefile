@@ -15,7 +15,7 @@ cowbuild: cowbuild10
 ttnutgatherer/nuts.atlas: ${IMAGES}
 	rm -f ttnutgatherer/nuts-?.png
 	python3 -m kivy.atlas -- ttnutgatherer/nuts 1500x1500 $^
-	optipng ttnutgatherer/nuts*.png
+	-optipng ttnutgatherer/nuts*.png
 
 clean::
 	rm -f ttnutgatherer/nuts.atlas ttnutgatherer/nuts-*.png
