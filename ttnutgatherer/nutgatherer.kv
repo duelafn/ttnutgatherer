@@ -122,3 +122,5 @@
         card_size: 2*self.height/3, self.width/7
         on_card_add: args[3].show_front = True
         on_card_press: app.on_card_press(*args)
+        on_card_drag:  app.on_card_drag(*args)
+        on_card_drop:  app.on_card_drop(*args)
