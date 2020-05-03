@@ -156,13 +156,15 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
 
 
     def on_notice_call_begin(self, game, player, data):
-        Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
+        if player == self.playerno:
+            Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
 
     def on_notice_call_start_turn(self, game, player, data):
         print("Start turn", data)
 
     def on_notice_call_draw(self, game, player, data):
-        print("Draw", data)
+        if player == self.playerno and data['drawn']:
+            self.draw_cards( [data['drawn']] )
 
     def on_notice_call_store(self, game, player, data):
         print("Store", data)

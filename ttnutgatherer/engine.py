@@ -140,6 +140,8 @@ class BaseGame(amethyst.games.EnginePlugin):
         # our game required it:
         # ** if drawn is not None: game.draw_pile.stack.remove(drawn)
 
+        # TODO: If an action card, play it immediately
+
         # Save the drawn card to the current player's hand
         if drawn is not None:
             game.player.hand.append(drawn)
@@ -164,13 +166,15 @@ class BaseGame(amethyst.games.EnginePlugin):
 
     @action
     def discard(self, game, stash, player_num, card):
-        print("DISCARD", card)
         game.expire()
+        # TODO: Might as well end turn automatically
         game.grant_current(name="end_turn")
 
     @action
     def store(self, game, stash, player_num, cards):
+        game.expire(Filter(name="draw"))
         print("STORE", cards, stash['hand_objs'])
+        game.grant_current(name="store")
 
     @store.check
     def store(self, game, stash, player_num, cards):
