@@ -167,8 +167,7 @@ class BaseGame(amethyst.games.EnginePlugin):
     @action
     def discard(self, game, stash, player_num, card):
         game.expire()
-        # TODO: Might as well end turn automatically
-        game.grant_current(name="end_turn")
+        game.call_immediate('end_turn', kwargs=dict(player_num=player_num))
 
     @action
     def store(self, game, stash, player_num, cards):
@@ -188,6 +187,6 @@ class BaseGame(amethyst.games.EnginePlugin):
 
 
     @action
-    def end_turn(self, game, stash, player_num, discard):
+    def end_turn(self, game, stash, player_num):
         game.commit()
         game.call_immediate('start_turn')

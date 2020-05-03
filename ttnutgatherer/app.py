@@ -84,22 +84,6 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
     def draw_card(self):
         self.trigger('draw')
 
-    def draw_cards(self, card_ids, dt=None):
-        id = card_ids[0]
-        card = self.game.stor_get(id)
-        if card:
-            for n, c in enumerate(self.card_fan.cards):
-                if c['card'].name > card.name:
-                    break
-            else:
-                n = len(self.card_fan)
-            widget = self.card_fan.get_card_widget()
-            widget.copy_from(self.draw_pile)
-            self.card_fan.insert(n, dict(card=card), widget=widget)
-
-        if len(card_ids) > 1:
-            Clock.schedule_once(partial(self.draw_cards, card_ids[1:]), 0.100)
-
     def on_card_press(self, fan, index, data, widget, touch):
         if touch.is_double_tap:
             print("Store", data['card'].name)
@@ -109,7 +93,6 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
             fan.lifted_cards.remove(index)
         else:
             fan.lifted_cards.append(index)
-
 
     def on_card_drag(self, fan, index, data, widget, touch):
         # TODO: check current actions, abort unless we are allowed
@@ -136,6 +119,7 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
         for i in fan.lifted_cards:
             fan.add_to_drag(i, touch)
 
+
     def on_card_drop(self, fan, index, data, widget, touch):
         dragged = list(fan.dragged(touch))
         if 3 == len(dragged):
@@ -150,21 +134,21 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
             card = data['card']
             if self.discard_pile.collide_point(*touch.pos):
                 if self.trigger('discard', card=card.id):
-                    self.discard(fan, index, data, widget)
+                    self.discard_anim(fan, index, data, widget)
             else:
                 print("Other")
 
 
     def on_notice_call_begin(self, game, player, data):
         if player == self.playerno:
-            Clock.schedule_once(partial(self.draw_cards, data['hand']), 0.500)
+            Clock.schedule_once(partial(self.draw_cards_anim, data['hand']), 0.500)
 
     def on_notice_call_start_turn(self, game, player, data):
         print("Start turn", data)
 
     def on_notice_call_draw(self, game, player, data):
         if player == self.playerno and data['drawn']:
-            self.draw_cards( [data['drawn']] )
+            self.draw_cards_anim( [data['drawn']] )
 
     def on_notice_call_store(self, game, player, data):
         print("Store", data)
@@ -174,7 +158,20 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
 
 
 
-    def discard(self, fan, index, data, widget):
+    def dispatch_notice(self, game, seq, player, notice):
+        super(NutgathererApp,self).dispatch_notice(game, seq, player, notice)
+        if notice.type in (NoticeType.GRANT, NoticeType.EXPIRE):
+            self.check_notes()
+        if notice.type == NoticeType.EXPIRE:
+            print(notice)
+
+    def check_notes(self):
+        self.notes = "Available actions:\n" + "".join(f"  * {x[1]}\n" for x in sorted(
+            GRANTS.get(g.name, (0, g.name)) for g in self.game.list_grants(self.playerno)
+        ))
+
+
+    def discard_anim(self, fan, index, data, widget):
         pile = self.discard_pile
         if fan and index is not None:
             fan.pop(index, recycle=False)
@@ -194,15 +191,21 @@ class NutgathererApp(ToastBehavior, amethyst.ttkvlib.app.App):
         self.discard_pile.card = card
         self.discard_pile.show_front = True
 
-    def dispatch_notice(self, game, seq, player, notice):
-        super(NutgathererApp,self).dispatch_notice(game, seq, player, notice)
-        if notice.type in (NoticeType.GRANT, NoticeType.EXPIRE):
-            self.check_notes()
+    def draw_cards_anim(self, card_ids, dt=None):
+        id = card_ids[0]
+        card = self.game.stor_get(id)
+        if card:
+            for n, c in enumerate(self.card_fan.cards):
+                if c['card'].name > card.name:
+                    break
+            else:
+                n = len(self.card_fan)
+            widget = self.card_fan.get_card_widget()
+            widget.copy_from(self.draw_pile)
+            self.card_fan.insert(n, dict(card=card), widget=widget)
 
-    def check_notes(self):
-        self.notes = "Available actions:\n" + "".join(f"  * {x[1]}\n" for x in sorted(
-            GRANTS.get(g.name, (0, g.name)) for g in self.game.list_grants(self.playerno)
-        ))
+        if len(card_ids) > 1:
+            Clock.schedule_once(partial(self.draw_cards_anim, card_ids[1:]), 0.100)
 
 
     def get_action(self, filt=None, **kwargs):
